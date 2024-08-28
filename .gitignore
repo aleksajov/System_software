@@ -1,0 +1,5 @@
+tests/
+misc/*.o
+misc/*.h
+misc/*.c
+my_program
