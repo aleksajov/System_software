@@ -5,9 +5,11 @@
 #include <vector>
 #include <string>
 #include <cstddef>
+#include <iostream>
 
 class Assembler {
     public:
+
 
         static Assembler& getInstance() {
             static Assembler instance;
@@ -16,6 +18,8 @@ class Assembler {
 
         Assembler(const Assembler&) = delete;
         Assembler& operator=(const Assembler&) = delete;
+
+        
         
         struct relocationTable{
             int offset;
@@ -32,9 +36,24 @@ class Assembler {
             bool isGlobal;
             std::string symName;
             bool isDefined;
+
+            enum class SymbolType{
+            SECTION,
+            LABEL
+            } symType;
+
+
+
+            bool operator==(const std::string& other) const {
+                return symName == other;
+            }
         };
 
         void generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, short int disp);
+
+        
+
+        
 
 
     private:
@@ -42,9 +61,10 @@ class Assembler {
         friend class Instruction;
 
         Assembler() = default;
-        std::string currSection="sekcija";
+        std::string currSection="";
         std::map<std::string, section> sections;
         std::vector<symbolTableEntry> symbolTable;
+        
 };
 
 

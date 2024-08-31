@@ -6,6 +6,9 @@
 class Directive{
     public:
         static void skip(unsigned int bytes);
+        static void end();
+        static void section(std::string name);
+        static void global(std::string list_of_syms);
 };
 
 

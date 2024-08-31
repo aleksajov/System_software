@@ -2,6 +2,12 @@
 
 void Assembler::generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, short int disp)
 {
+    if(currSection=="")
+    {
+        std::cerr<<"No section opened"<<std::endl;
+        return;
+    }
+    
     uint8_t byte = (oc<<4)|(mod&0x0F);
     sections[currSection].bytes.push_back(byte);
     byte = (rega<<4)|(regb&0x0F);
@@ -11,3 +17,4 @@ void Assembler::generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb
     byte = (uint8_t)(disp&0xFF);
     sections[currSection].bytes.push_back(byte);
 }
+

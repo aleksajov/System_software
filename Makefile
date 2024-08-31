@@ -52,7 +52,11 @@ $(MISC_DIR)/bisonFile.tab.c $(MISC_DIR)/bisonFile.tab.h: $(MISC_DIR)/bisonFile.y
 
 # Clean up build files
 clean:
-	rm -f main misc/*.o src/*.o misc/lexer.c misc/bisonFile.tab.c misc/bisonFile.tab.h
+	rm -f main misc/*.o src/*.o misc/lexer.c misc/bisonFile.tab.c misc/bisonFile.tab.h my_program
+
+# Run the program with GDB
+gdb: $(TARGET)
+	gdb $(TARGET)
 
 # Phony targets
-.PHONY: all clean
+.PHONY: all clean gdb
