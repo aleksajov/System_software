@@ -88,13 +88,13 @@ statements:
 statement:
     directive
     | instruction
-    | LABEL  { printf("Parsed LABEL: %s\n", $1); free($1);}
+    | LABEL  { printf("Parsed LABEL: %s\n", $1); Assembler::getInstance().handleLabel($1); free($1);}
     ;
 directive:
     GLOBAL list_of_symbols { printf("Parsed global: %s\n", $2);  Directive::global($2); free($2); }
-    | EXTERN list_of_symbols { printf("Parsed extern: \n");  }
+    | EXTERN list_of_symbols { printf("Parsed extern: %s\n", $2);  Directive::_extern($2); free($2);}
     | SECTION IDENT { printf("Parsed section: %s\n", $2); Directive::section($2); free($2); }
-    | WORD list_of_literals_or_symbols { printf("Parsed word: \n"); }
+    | WORD list_of_literals_or_symbols { printf("Parsed word: %s\n", $2); Directive::word($2); }
     | SKIP INTEGER { printf("Parsed skip: \n"); Directive::skip($2); }
     | END { printf("Parsed end: \n"); Directive::end(); YYACCEPT;}
     ;
@@ -129,17 +129,17 @@ literal_or_symbol:
 
 instruction:
     HALT { printf("Parsed halt \n"); Instruction::halt();  }
-    | INT { printf("Parsed int: \n"); }
+    | INT { printf("Parsed int: \n"); Instruction::interrupt(); }
     | IRET { printf("Parsed iret: \n"); }
     | CALL literal_or_symbol { printf("Parsed call %s\n", $2);}
-    | RET { printf("Parsed ret: \n"); }
+    | RET { printf("Parsed ret: \n"); Instruction::ret(); }
     | JMP literal_or_symbol { printf("Parsed jmp: %s\n", $2);}
     | BEQ REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed beq with registers %d %d: \n", $2, $4);}
     | BNE REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bne: with registers %d %d: \n", $2, $4);}
     | BGT REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bgt: with registers %d %d: \n", $2, $4);}
-    | PUSH REGISTER{ printf("Parsed push: %d\n", $2);}
-    | POP REGISTER{printf("Parsed pop:  %d\n", $2); }
-    | XCHG REGISTER COMMA REGISTER { printf("Parsed xchg: with registers %d %d: \n", $2, $4);}
+    | PUSH REGISTER{ printf("Parsed push: %d\n", $2); Instruction::push($2); }
+    | POP REGISTER{printf("Parsed pop:  %d\n", $2); Instruction::pop($2); }
+    | XCHG REGISTER COMMA REGISTER { printf("Parsed xchg: with registers %d %d: \n", $2, $4); Instruction::xchg($2, $4);}
     | ADD REGISTER COMMA REGISTER { printf("Parsed add: with registers %d %d: \n", $2, $4); Instruction::add($4, $2); }
     | SUB REGISTER COMMA REGISTER { printf("Parsed sub: with registers %d %d: \n", $2, $4); Instruction::sub($4, $2);}
     | MUL REGISTER COMMA REGISTER { printf("Parsed mul: with registers %d %d: \n", $2, $4); Instruction::mul($4, $2);}
@@ -152,8 +152,8 @@ instruction:
     | SHR REGISTER COMMA REGISTER {printf("Parsed shr: with registers %d %d: \n", $2, $4); Instruction::shr($4, $2);}
     | LD operand COMMA REGISTER { printf("Parsed ld: with register %d : \n",  $4);}
     | ST REGISTER COMMA operand {printf("Parsed st: with register %d : \n", $2); }
-    | CSRRD csr COMMA REGISTER { printf("Parsed csrrd:  %d\n",  $4);}
-    | CSRWR REGISTER COMMA csr {printf("Parsed csrwr: reg %d\n", $2); }
+    | CSRRD csr COMMA REGISTER { printf("Parsed csrrd:  %d , %d\n",  $2, $4); Instruction::csrrd($2, $4); }
+    | CSRWR REGISTER COMMA csr {printf("Parsed csrwr: reg %d , %d\n",  $2, $4); Instruction::csrrw($2, $4); }
     ;
 
 operand:
@@ -168,9 +168,9 @@ operand:
     ;
 
 csr:
-    STATUS { $$=1; printf("status\n");}
-    | HANDLER { $$=2; printf("handler\n");}
-    | CAUSE { $$=3; printf("cause\n");}
+    STATUS { $$=0;}
+    | HANDLER { $$=1;}
+    | CAUSE { $$=2;}
     ;
  
 %%

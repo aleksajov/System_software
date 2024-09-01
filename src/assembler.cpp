@@ -1,4 +1,6 @@
 #include "../inc/assembler.hpp"
+#include "assembler.hpp"
+#include <algorithm>
 
 void Assembler::generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, short int disp)
 {
@@ -18,3 +20,42 @@ void Assembler::generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb
     sections[currSection].bytes.push_back(byte);
 }
 
+void Assembler::handleLabel(std::string label)
+{
+    if(currSection=="")
+    {
+        std::cout<<"No section opened"<<std::endl;
+        exit(1);
+    }
+    uint32_t lc=sections[currSection].bytes.size();
+    if(std::find(symbolTable.begin(), symbolTable.end(), label) == symbolTable.end())
+    {
+        symbolTable.push_back(symbolTableEntry{lc, currSection, false, label, true});
+        return;
+    }
+    
+    for(auto& entry : symbolTable)
+    {
+        if(entry.symName==label)
+        {
+            if(entry.isDefined)
+            {
+                std::cout<<"Symbol "<<label<<" is already defined"<<std::endl;
+                exit(1);
+            }
+            entry.symValue=lc;
+            entry.symSection=currSection;
+            entry.isDefined=true;
+            break;
+        }
+    }
+    /*
+    unsigned int symValue;
+            std::string symSection;
+            bool isGlobal;
+            std::string symName;
+            bool isDefined;
+            */
+    
+    
+}

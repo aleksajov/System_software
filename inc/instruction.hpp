@@ -16,6 +16,13 @@ class Instruction{
         static void _xor(uint8_t rega, uint8_t regb);
         static void shl(uint8_t rega, uint8_t regb);
         static void shr(uint8_t rega, uint8_t regb);
+        static void csrrd(uint8_t csr, uint8_t gpr);
+        static void csrrw(uint8_t gpr, uint8_t csr);
+        static void xchg(uint8_t rega, uint8_t regb);
+        static void pop(uint8_t gpr);
+        static void push(uint8_t gpr);
+        static void interrupt();
+        static void ret();
 };
 
 #endif

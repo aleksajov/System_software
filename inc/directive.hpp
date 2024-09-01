@@ -9,6 +9,11 @@ class Directive{
         static void end();
         static void section(std::string name);
         static void global(std::string list_of_syms);
+        static void _extern(std::string list_of_syms);
+        static void word(std::string list_of_syms_or_literals);
+
+
+        static std::vector<std::string> splitListOfSyms(const std::string& str, char delimiter);
 };
 
 

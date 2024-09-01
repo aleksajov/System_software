@@ -21,14 +21,15 @@ class Assembler {
 
         
         
-        struct relocationTable{
+        struct relocationTableEntry{
             int offset;
             int addend;
             std::string symbol;
+            relocationTableEntry(int offset, int addend, std::string symbol): offset(offset), addend(addend), symbol(symbol){}
         };
         struct section{
             std::vector<uint8_t> bytes;
-            std::vector<relocationTable> relocationTables;
+            std::vector<relocationTableEntry> relocationTable;
         };
         struct symbolTableEntry{
             unsigned int symValue;
@@ -37,12 +38,12 @@ class Assembler {
             std::string symName;
             bool isDefined;
 
+            /*
             enum class SymbolType{
             SECTION,
             LABEL
             } symType;
-
-
+            */
 
             bool operator==(const std::string& other) const {
                 return symName == other;
@@ -51,7 +52,7 @@ class Assembler {
 
         void generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, short int disp);
 
-        
+        void handleLabel(std::string label);
 
         
 
