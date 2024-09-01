@@ -23,6 +23,15 @@ class Instruction{
         static void push(uint8_t gpr);
         static void interrupt();
         static void ret();
+        static void iret();
+        static void jmp(std::string literal_or_symbol);
+        static void beq(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol);
+        static void bne(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol);
+        static void bgt(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol);
+        static void call(std::string literal_or_symbol);
+        
+    private:
+        static void branches(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol, uint8_t mmmm);
 };
 
 #endif

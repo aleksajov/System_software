@@ -93,21 +93,7 @@ void Directive::word(std::string list_of_syms_or_literals)
     std::vector<std::string> symbols = splitListOfSyms(list_of_syms_or_literals, ' ');
 
     for(const auto& sym : symbols){
-        try{
-            unsigned long long value=std::stoull(sym);
-            if (value > 0xFFFFFFFF) {
-                std::cout << "Value " << sym << " is too large to fit in 4 bytes" << std::endl;
-                exit(1);
-            }
-            for(int i=0; i<4; i++){
-                assembler.sections[assembler.currSection].bytes.push_back((value>>(i*8))&0xFF);
-            }
-        }
-        catch(...) {
-            assembler.sections[assembler.currSection].relocationTable.emplace_back(assembler.sections[assembler.currSection].bytes.size(), 0, sym);
-            Directive::skip(4);
-
-        }
+        assembler.symbol_or_literal_const_write_to_section(sym);
     }
 }
 std::vector<std::string> Directive::splitListOfSyms(const std::string& str, char delimiter) {

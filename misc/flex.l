@@ -87,10 +87,10 @@ csrwr {return CSRWR;}
 %handler {return HANDLER;}
 %cause {return CAUSE;}
 
-\$[1-9][0-9]*            { yylval.integerValue = atoi(yytext+1); return DOLARINTEGER; }
+\$[0-9]+            { yylval.integerValue = atoi(yytext+1); return DOLARINTEGER; }
 \$0x[0-9a-fA-F]+    { yylval.integerValue = (int)strtol(yytext+1, NULL, 16); return DOLARINTEGER; }
 
-[1-9][0-9]*           { yylval.integerValue = atoi(yytext); return INTEGER; }
+[0-9]+           { yylval.integerValue = atoi(yytext); return INTEGER; }
 0x[0-9a-fA-F]+    { yylval.integerValue = (int)strtol(yytext, NULL, 16); return INTEGER; }
 
 . {

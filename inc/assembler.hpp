@@ -65,6 +65,10 @@ class Assembler {
         std::string currSection="";
         std::map<std::string, section> sections;
         std::vector<symbolTableEntry> symbolTable;
+
+
+        void symbol_or_literal_const_write_to_section(std::string literal_or_symbol);
+        void checkSectionOpened();
         
 };
 

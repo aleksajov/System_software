@@ -128,15 +128,15 @@ literal_or_symbol:
     ;
 
 instruction:
-    HALT { printf("Parsed halt \n"); Instruction::halt();  }
-    | INT { printf("Parsed int: \n"); Instruction::interrupt(); }
-    | IRET { printf("Parsed iret: \n"); }
-    | CALL literal_or_symbol { printf("Parsed call %s\n", $2);}
+    HALT { printf("Parsed halt \n"); Instruction::halt();}
+    | INT { printf("Parsed int: \n"); Instruction::interrupt();}
+    | IRET { printf("Parsed iret: \n"); Instruction::iret();}
+    | CALL literal_or_symbol { printf("Parsed call %s\n", $2); Instruction::call($2); free($2);}
     | RET { printf("Parsed ret: \n"); Instruction::ret(); }
-    | JMP literal_or_symbol { printf("Parsed jmp: %s\n", $2);}
-    | BEQ REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed beq with registers %d %d: \n", $2, $4);}
-    | BNE REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bne: with registers %d %d: \n", $2, $4);}
-    | BGT REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bgt: with registers %d %d: \n", $2, $4);}
+    | JMP literal_or_symbol { printf("Parsed jmp: %s\n", $2); Instruction::jmp($2); free($2);}
+    | BEQ REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed beq with registers %d %d and %s: \n", $2, $4, $6); Instruction::beq($2, $4, $6); free($6);}
+    | BNE REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bne: with registers %d %d and %s: \n", $2, $4, $6); Instruction::bne($2, $4, $6); free($6);}
+    | BGT REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bgt: with registers %d %d and %s: \n", $2, $4, $6); Instruction::bgt($2, $4, $6); free($6);}
     | PUSH REGISTER{ printf("Parsed push: %d\n", $2); Instruction::push($2); }
     | POP REGISTER{printf("Parsed pop:  %d\n", $2); Instruction::pop($2); }
     | XCHG REGISTER COMMA REGISTER { printf("Parsed xchg: with registers %d %d: \n", $2, $4); Instruction::xchg($2, $4);}
