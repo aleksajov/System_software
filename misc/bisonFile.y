@@ -150,10 +150,22 @@ instruction:
     | XOR REGISTER COMMA REGISTER {printf("Parsed xor:with registers %d %d: \n", $2, $4); Instruction::_xor($4, $2);}
     | SHL REGISTER COMMA REGISTER {printf("Parsed shl: with registers %d %d: \n", $2, $4); Instruction::shl($4, $2);}
     | SHR REGISTER COMMA REGISTER {printf("Parsed shr: with registers %d %d: \n", $2, $4); Instruction::shr($4, $2);}
-    | LD operand COMMA REGISTER { printf("Parsed ld: with register %d : \n",  $4);}
-    | ST REGISTER COMMA operand {printf("Parsed st: with register %d : \n", $2); }
     | CSRRD csr COMMA REGISTER { printf("Parsed csrrd:  %d , %d\n",  $2, $4); Instruction::csrrd($2, $4); }
     | CSRWR REGISTER COMMA csr {printf("Parsed csrwr: reg %d , %d\n",  $2, $4); Instruction::csrrw($2, $4); }
+    | LD DOLARINTEGER COMMA REGISTER { printf("Parsed  dolarinteger ld: with int %d register %d : \n", $2, $4); Instruction::load_imm_literal($2, $4);}
+    | LD DOLARIDENT COMMA REGISTER { printf("Parsed ld: with dolarymb %s and register %d : \n", $2, $4); Instruction::load_imm_symbol($2, $4);}
+    | LD INTEGER COMMA REGISTER { printf("Parsed ld: with register %d and address %d: \n",  $4, $2); Instruction::load_literal($2, $4);}
+    | LD IDENT COMMA REGISTER { printf("Parsed ld: with register %d and ident %s: \n",  $4, $2); Instruction::load_symbol($2, $4); }
+    | LD REGISTER COMMA REGISTER { printf("Parsed ld r%d, r%d \n", $2, $4); Instruction::load_regdir($2, $4);}
+    | LD LEFT_BRACKET REGISTER RIGHT_BRACKET COMMA REGISTER { printf("Parsed ld [r%d], r%d  \n",  $3, $6); Instruction::load_reg_ind($3, $6);}
+    | LD LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET COMMA REGISTER { printf("Parsed ld [r%d+%x], r%d : \n",  $3, $5, $8); Instruction::load_reg_ind_offset($5, $3, $8);}
+    | ST REGISTER COMMA DOLARINTEGER {printf("Parsed st: with register %d : \n", $2); }
+    | ST REGISTER COMMA DOLARIDENT {printf("Parsed st: with register %d : \n", $2); }
+    | ST REGISTER COMMA INTEGER {printf("Parsed st: with register %d : \n", $2); }
+    | ST REGISTER COMMA IDENT {printf("Parsed st: with register %d : \n", $2); }
+    | ST REGISTER COMMA REGISTER {printf("Parsed st: with register %d : \n", $2); }
+    | ST REGISTER COMMA LEFT_BRACKET REGISTER RIGHT_BRACKET {printf("Parsed st: with register %d : \n", $2); }
+    | ST REGISTER COMMA LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET {printf("Parsed st: with register %d : \n", $2); }
     ;
 
 operand:

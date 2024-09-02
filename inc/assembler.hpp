@@ -68,6 +68,7 @@ class Assembler {
 
 
         void symbol_or_literal_const_write_to_section(std::string literal_or_symbol);
+        void literal_write_to_section(uint32_t literal);
         void checkSectionOpened();
         
 };

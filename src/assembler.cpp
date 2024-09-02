@@ -72,7 +72,19 @@ void Assembler::symbol_or_literal_const_write_to_section(std::string literal_or_
         assembler.sections[assembler.currSection].relocationTable.emplace_back(assembler.sections[assembler.currSection].bytes.size(), 0, literal_or_symbol);
         Directive::skip(4);
     }
-    
+}
+
+void Assembler::literal_write_to_section(uint32_t literal)
+{
+    checkSectionOpened();
+    Assembler& assembler=Assembler::getInstance();
+    if (literal > 0xFFFFFFFF) {
+        std::cout << literal << " is larger than 4 bytes" << std::endl;
+        exit(1);
+    }
+    for(int i=0; i<4; i++){
+        assembler.sections[assembler.currSection].bytes.push_back((literal>>(i*8))&0xFF);
+    }
 }
 
 void Assembler::checkSectionOpened()

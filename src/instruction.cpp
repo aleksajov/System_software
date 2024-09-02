@@ -130,6 +130,60 @@ void Instruction::call(std::string literal_or_symbol)
     Assembler::getInstance().symbol_or_literal_const_write_to_section(literal_or_symbol);
 }
 
+void Instruction::load_imm_literal(uint32_t literal, uint8_t reg)
+{
+    Assembler& ass=Assembler::getInstance();
+    ass.generateCode(0x9, 0x2, reg, 15, 0, 4);
+    ass.generateCode(0x3, 0x0, 15, 0x0, 0x0, 0x4);
+    ass.literal_write_to_section(literal);
+}
+void Instruction::load_imm_symbol(std::string symbol, uint8_t reg)
+{
+    Assembler& ass=Assembler::getInstance();
+    ass.generateCode(0x9, 0x2, reg, 15, 0, 4);
+    ass.generateCode(0x3, 0x0, 15, 0x0, 0x0, 0x4);
+    int lc=ass.sections[ass.currSection].bytes.size();
+    ass.sections[ass.currSection].relocationTable.emplace_back(lc, 0, symbol);
+    Directive::skip(4);
+}
+
+void Instruction::load_literal(uint32_t literal, uint8_t reg)
+{
+    Assembler& ass=Assembler::getInstance();
+    ass.generateCode(0x9, 0x2, reg, 15, 0, 4);
+    ass.generateCode(0x3, 0x0, 15, 0x0, 0x0, 0x4);
+    ass.literal_write_to_section(literal);
+    ass.generateCode(9, 2, reg, reg, 0, 0);
+}
+
+void Instruction::load_symbol(std::string symbol, uint8_t reg)
+{
+    Assembler& ass=Assembler::getInstance();
+    ass.generateCode(0x9, 0x2, reg, 15, 0, 4);
+    ass.generateCode(0x3, 0x0, 15, 0x0, 0x0, 0x4);
+    int lc=ass.sections[ass.currSection].bytes.size();
+    ass.sections[ass.currSection].relocationTable.emplace_back(lc, 0, symbol);
+    Directive::skip(4);
+    ass.generateCode(9, 2, reg, reg, 0, 0);
+}
+
+void Instruction::load_regdir(uint8_t gprs, uint8_t gprd)
+{
+    Assembler::getInstance().generateCode(0x9, 0x1, gprd, gprs, 0, 0);
+}
+
+void Instruction::load_reg_ind(uint8_t gprs, uint8_t gprd)
+{
+    Assembler::getInstance().generateCode(0x9, 0x2, gprd, gprs, 0, 0);
+}
+void Instruction::load_reg_ind_offset(uint16_t offset, uint8_t gprs, uint8_t gprd)
+{
+    if(offset>0xfff){
+        std::cout<<"Offset "<<std::hex<<offset<<std::dec<<" larger than 12 bits"<<std::endl;
+        exit(1);
+    }
+    Assembler::getInstance().generateCode(0x9, 0x2, gprd, gprs, 0, offset&0xfff);
+}
 void Instruction::branches(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol, uint8_t mmmm)
 {
     Assembler& assembler=Assembler::getInstance();
