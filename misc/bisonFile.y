@@ -159,13 +159,13 @@ instruction:
     | LD REGISTER COMMA REGISTER { printf("Parsed ld r%d, r%d \n", $2, $4); Instruction::load_regdir($2, $4);}
     | LD LEFT_BRACKET REGISTER RIGHT_BRACKET COMMA REGISTER { printf("Parsed ld [r%d], r%d  \n",  $3, $6); Instruction::load_reg_ind($3, $6);}
     | LD LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET COMMA REGISTER { printf("Parsed ld [r%d+%x], r%d : \n",  $3, $5, $8); Instruction::load_reg_ind_offset($5, $3, $8);}
-    | ST REGISTER COMMA DOLARINTEGER {printf("Parsed st: with register %d : \n", $2); }
-    | ST REGISTER COMMA DOLARIDENT {printf("Parsed st: with register %d : \n", $2); }
-    | ST REGISTER COMMA INTEGER {printf("Parsed st: with register %d : \n", $2); }
-    | ST REGISTER COMMA IDENT {printf("Parsed st: with register %d : \n", $2); }
-    | ST REGISTER COMMA REGISTER {printf("Parsed st: with register %d : \n", $2); }
-    | ST REGISTER COMMA LEFT_BRACKET REGISTER RIGHT_BRACKET {printf("Parsed st: with register %d : \n", $2); }
-    | ST REGISTER COMMA LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET {printf("Parsed st: with register %d : \n", $2); }
+    | ST REGISTER COMMA DOLARINTEGER {printf("Parsing err: Tried st to literal "); exit(1); }
+    | ST REGISTER COMMA DOLARIDENT {printf("Parsing err: Tried immediate adressing with st"); exit(1); }
+    | ST REGISTER COMMA INTEGER {printf("Parsed st: with register %d and literal %x: \n", $2, $4); Instruction::store_literal($2, $4);}
+    | ST REGISTER COMMA IDENT {printf("Parsed st: with register %d and ident %s: \n", $2, $4); Instruction::store_symbol($2, $4);}
+    | ST REGISTER COMMA REGISTER {printf("Parsed st r%d, r%d \n", $2, $4); Instruction::load_regdir($2, $4);}
+    | ST REGISTER COMMA LEFT_BRACKET REGISTER RIGHT_BRACKET {printf("Parsed st r%d, [r%d] : \n", $2, $5); Instruction::store_regind($2, $5);}
+    | ST REGISTER COMMA LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET {printf("Parsed st r%d, [r%d + %d] : \n", $2, $5, $7); Instruction::store_regind_offs($7, $2, $5); }
     ;
 
 operand:
@@ -205,5 +205,5 @@ char* intToChar(int num) {
 
 void yyerror(const char *s) {
   printf("Parsing error: %s\n", s);
-  exit(-1);
+  exit(1);
 }

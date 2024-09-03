@@ -14,6 +14,11 @@ class Directive{
 
 
         static std::vector<std::string> splitListOfSyms(const std::string& str, char delimiter);
+
+    private:
+        Directive()=default;
+        Directive(const Directive&)=delete;
+        Directive& operator=(const Directive&)=delete;
 };
 
 

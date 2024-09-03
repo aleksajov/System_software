@@ -38,9 +38,17 @@ class Instruction{
         static void load_regdir(uint8_t gprs, uint8_t gprd);
         static void load_reg_ind(uint8_t gprs, uint8_t gprd);
         static void load_reg_ind_offset(uint16_t offset, uint8_t gprs, uint8_t gprd);
+
+        static void store_literal(uint8_t reg, uint32_t literal);
+        static void store_symbol(uint8_t reg, std::string symbol);
+        static void store_regind(uint8_t gprs, uint8_t gpraddress);
+        static void store_regind_offs(uint16_t offset, uint8_t gprs, uint8_t gpraddress);
         
     private:
         static void branches(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol, uint8_t mmmm);
+        Instruction() = default;
+        Instruction(const Instruction&)=delete;
+        Instruction& operator=(const Instruction&)=delete;
 };
 
 #endif

@@ -184,6 +184,34 @@ void Instruction::load_reg_ind_offset(uint16_t offset, uint8_t gprs, uint8_t gpr
     }
     Assembler::getInstance().generateCode(0x9, 0x2, gprd, gprs, 0, offset&0xfff);
 }
+void Instruction::store_literal(uint8_t reg, uint32_t literal)
+{
+    Assembler& ass=Assembler::getInstance();
+    ass.generateCode(0x8, 0x2, 15, 0, reg, 4);
+    ass.generateCode(0x3, 0x0, 15, 0, 0, 4);
+    ass.literal_write_to_section(literal);
+}
+void Instruction::store_symbol(uint8_t reg, std::string symbol)
+{
+    Assembler& ass=Assembler::getInstance();
+    ass.generateCode(0x8, 0x2, 15, 0, reg, 4);
+    ass.generateCode(0x3, 0x0, 15, 0, 0, 4);
+    int lc=ass.sections[ass.currSection].bytes.size();
+    ass.sections[ass.currSection].relocationTable.emplace_back(lc, 0, symbol);
+    Directive::skip(4);
+}
+void Instruction::store_regind(uint8_t gprs, uint8_t gpraddress)
+{
+    Assembler::getInstance().generateCode(0x8, 0x0, gpraddress, 0, gprs, 0);
+}
+void Instruction::store_regind_offs(uint16_t offset, uint8_t gprs, uint8_t gpraddress)
+{
+    if(offset>0xfff){
+        std::cout<<"Offset "<<std::hex<<offset<<std::dec<<" larger than 12 bits"<<std::endl;
+        exit(1);
+    }
+    Assembler::getInstance().generateCode(0x8, 0, gpraddress, 0, gprs, offset);
+}
 void Instruction::branches(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol, uint8_t mmmm)
 {
     Assembler& assembler=Assembler::getInstance();
