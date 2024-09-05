@@ -38,30 +38,27 @@ class Assembler {
             std::string symName;
             bool isDefined;
 
-            /*
-            enum class SymbolType{
-            SECTION,
-            LABEL
-            } symType;
-            */
-
-            bool operator==(const std::string& other) const {
-                return symName == other;
+            bool operator==(const std::string& str) const {
+                return symName == str;
             }
         };
 
         void generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, short int disp);
 
         void handleLabel(std::string label);
-
+        void relocationEntriesResolve();
         
-
+        void printToTxtFile(std::string file);
+        void printToBinFile(std::string file);
 
     private:
         friend class Directive;
         friend class Instruction;
 
         Assembler() = default;
+        Assembler(const Assembler&&) = delete;
+        Assembler& operator=(const Assembler&&) = delete;
+        
         std::string currSection="";
         std::map<std::string, section> sections;
         std::vector<symbolTableEntry> symbolTable;

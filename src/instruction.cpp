@@ -126,7 +126,8 @@ void Instruction::bgt(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol)
 
 void Instruction::call(std::string literal_or_symbol)
 {
-    Assembler::getInstance().generateCode(0x2, 0x1, 15, 0, 0, 0);
+    Assembler::getInstance().generateCode(0x2, 0x1, 15, 0, 0, 4);
+    Assembler::getInstance().generateCode(0x3, 0x0, 15, 0x0, 0x0, 0x4);
     Assembler::getInstance().symbol_or_literal_const_write_to_section(literal_or_symbol);
 }
 

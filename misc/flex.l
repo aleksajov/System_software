@@ -88,10 +88,10 @@ csrwr {return CSRWR;}
 %cause {return CAUSE;}
 
 \$[0-9]+            { yylval.integerValue = atoi(yytext+1); return DOLARINTEGER; }
-\$0x[0-9a-fA-F]+    { yylval.integerValue = (int)strtol(yytext+1, NULL, 16); return DOLARINTEGER; }
+\$0x[0-9a-fA-F]+    { yylval.integerValue = (unsigned int)strtoul(yytext+1, NULL, 16); return DOLARINTEGER; }
 
 [0-9]+           { yylval.integerValue = atoi(yytext); return INTEGER; }
-0x[0-9a-fA-F]+    { yylval.integerValue = (int)strtol(yytext, NULL, 16); return INTEGER; }
+0x[0-9a-fA-F]+    { yylval.integerValue = (unsigned int)strtoul(yytext, NULL, 16); return INTEGER; }
 
 . {
     printf("Flex error:character %c on line %d\n", yytext[0], lineNum);
@@ -100,6 +100,3 @@ csrwr {return CSRWR;}
 
 
 %%
-
-
-

@@ -2,5 +2,9 @@ tests/
 misc/*.o
 misc/*.h
 misc/*.c
-my_program
+asembler
 .vscode/
+01-ss-2023-2024-projekat-odbrana-testovi/
+output.txt
+*.o
+*.txt

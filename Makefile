@@ -13,7 +13,7 @@ C_SRCS = $(wildcard $(MISC_DIR)/*.c)
 OBJS = $(CPP_SRCS:.cpp=.o) $(C_SRCS:.c=.o) $(MISC_DIR)/lexer.o $(MISC_DIR)/parser.o
 
 # Output executable
-TARGET = my_program
+TARGET = asembler
 
 # Default target
 all: $(TARGET)
@@ -52,7 +52,7 @@ $(MISC_DIR)/bisonFile.tab.c $(MISC_DIR)/bisonFile.tab.h: $(MISC_DIR)/bisonFile.y
 
 # Clean up build files
 clean:
-	rm -f main misc/*.o src/*.o misc/lexer.c misc/bisonFile.tab.c misc/bisonFile.tab.h my_program
+	rm -f misc/*.o src/*.o misc/lexer.c misc/bisonFile.tab.c misc/bisonFile.tab.h asembler 
 
 # Run the program with GDB
 gdb: $(TARGET)
