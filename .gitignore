@@ -3,6 +3,7 @@ misc/*.o
 misc/*.h
 misc/*.c
 asembler
+linker
 .vscode/
 01-ss-2023-2024-projekat-odbrana-testovi/
 output.txt

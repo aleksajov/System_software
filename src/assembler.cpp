@@ -203,16 +203,20 @@ void Assembler::printToBinFile(std::string file)
             newSymbolTable.push_back(entry);
         }
     }
-    
-    size_t symbolTableSize = newSymbolTable.size();
-    out.write(reinterpret_cast<const char*>(&symbolTableSize), sizeof(size_t));
+
+    size_t newSymbolTableSize = newSymbolTable.size();
+    out.write(reinterpret_cast<const char*>(&newSymbolTableSize), sizeof(size_t));
 
 
     for (auto& entry : newSymbolTable)
     {
-        out.write(entry.symName.c_str(), entry.symName.size());
+        size_t writtenStringSize = entry.symName.size();
+        out.write(reinterpret_cast<const char*>(&writtenStringSize), sizeof(size_t));
+        out.write(entry.symName.c_str(), writtenStringSize);
         out.write(reinterpret_cast<const char*>(&entry.symValue), sizeof(unsigned int));
-        out.write(entry.symSection.c_str(), entry.symSection.size());
+        writtenStringSize = entry.symSection.size();
+        out.write(reinterpret_cast<const char*>(&writtenStringSize), sizeof(size_t));
+        out.write(entry.symSection.c_str(), writtenStringSize);
         out.write(reinterpret_cast<const char*>(&entry.isGlobal), sizeof(bool));
         out.write(reinterpret_cast<const char*>(&entry.isDefined), sizeof(bool));
     }
@@ -222,14 +226,18 @@ void Assembler::printToBinFile(std::string file)
 
     for(auto& [sectionName, section]: sections)
     {
-        out.write(sectionName.c_str(), sectionName.size());
+        size_t writtenStringSize = sectionName.size();
+        out.write(reinterpret_cast<const char*>(&writtenStringSize), sizeof(size_t));
+        out.write(sectionName.c_str(), writtenStringSize);
         size_t relocEntriesNum=section.relocationTable.size();
         out.write(reinterpret_cast<const char*>(&relocEntriesNum), sizeof(size_t));
         for(auto& relocEntry: section.relocationTable)
         {
             out.write(reinterpret_cast<const char*>(&relocEntry.offset), sizeof(int));
             out.write(reinterpret_cast<const char*>(&relocEntry.addend), sizeof(int));
-            out.write(relocEntry.symbol.c_str(), relocEntry.symbol.size());
+            writtenStringSize=relocEntry.symbol.size();
+            out.write(reinterpret_cast<const char*>(&writtenStringSize), sizeof(size_t));
+            out.write(relocEntry.symbol.c_str(), writtenStringSize);
         }
         size_t bytesNum=section.bytes.size();
         out.write(reinterpret_cast<const char*>(&bytesNum), sizeof(size_t));
