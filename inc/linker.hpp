@@ -34,8 +34,6 @@ class Linker{
         struct section{
             std::vector<uint8_t> bytes;
             std::vector<relocationTableEntry> relocationTable;
-            unsigned int startAddress;
-            unsigned int size;
         };
 
         int readFromBinFile(std::string file);
@@ -43,8 +41,13 @@ class Linker{
 
         int parseCallingArguments(int argc, char** argv);
 
+        void relocationEntriesResolve();
+        int placeSections();
 
+        void makeExecutableFile();
+        int checkForUndefinedSymbols()const;
 
+        std::vector<std::string> getInputFileNames();
     private:
         Linker() = default;
         Linker(const Linker&) = delete;
@@ -54,9 +57,7 @@ class Linker{
         std::map<std::string, section> sections;
         std::vector<std::string> inputFileNames;
         std::string outputFileName;
-        std::map<std::string, unsigned int> parsedSectionsStarts;
-
-        friend int main(int argc, char** argv);
+        std::map<std::string, unsigned long> parsedSectionsStarts;
 };
 
 #endif

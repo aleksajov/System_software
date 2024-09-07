@@ -4,8 +4,8 @@
 #include<cstring>
 #include<string>
 #include<regex>
-
-
+#include<cmath>
+#include<iomanip>
 
 int main(int argc, char** argv){
     
@@ -13,29 +13,21 @@ int main(int argc, char** argv){
 
     if(linker.parseCallingArguments(argc, argv)!=0) return 1;
 
-
-    /*
-    std::cout<<"Input files: ";
-    for(auto& file: linker.inputFileNames)
-    {
-        std::cout<<file<<" ";
-    }
-    std::cout<<std::endl;
-    std::cout<<"Output file: "<<linker.outputFileName<<std::endl;
-
-    for(auto& section: linker.sections)
-    {
-        std::cout<<"Section: "<<section.first<<std::endl;
-        std::cout<<"Start address: 0x"<<std::hex<<section.second.startAddress<<std::endl;
-    }
-
-    */
     
-    for(auto& inputFile: linker.inputFileNames)
+    for(auto& inputFile: linker.getInputFileNames())
     {
         if(linker.readFromBinFile(inputFile)!=0) return 1;
     }
 
+    int stat=linker.placeSections();
+    if(stat!=0) return stat;
+
+    stat=linker.checkForUndefinedSymbols();
+    if(stat!=0) return stat;
+
+    linker.relocationEntriesResolve();
+
+    linker.makeExecutableFile();
     return 0;
 }
 
@@ -76,17 +68,13 @@ int Linker::readFromBinFile(std::string file)
         {
             if(symSection!="/")
             {
-                symbolTable.emplace_back(symValue, symSection, isGlobal, symName, isDefined);
+                unsigned int currSectionSize=sections[symSection].bytes.size();
+                symbolTable.emplace_back(symValue+currSectionSize, symSection, isGlobal, symName, isDefined);
             }
             else
             {
-                if(this->parsedSectionsStarts.find(symName)!=this->parsedSectionsStarts.end())
-                {
-                    symbolTable.emplace_back(this->parsedSectionsStarts[symName], "/", isGlobal, symName, true);
-                }
-                else{
-                    symbolTable.emplace_back(0, "/", isGlobal, symName, true);
-                }
+                symbolTable.emplace_back(0, "/", isGlobal, symName, true);
+                (void)sections[symName];
             }
         }
         else if(symSection=="/" && isGlobal)
@@ -94,6 +82,7 @@ int Linker::readFromBinFile(std::string file)
             auto entry=std::find(symbolTable.begin(), symbolTable.end(), symName);
             entry->isGlobal=true;
         }
+        //simbol je u tabeli simbola i definisan je
         else if(isGlobal && isDefined && symSection!="/")
         {
             auto entry=std::find(symbolTable.begin(), symbolTable.end(), symName);
@@ -104,10 +93,8 @@ int Linker::readFromBinFile(std::string file)
             }
             entry->isDefined=true;
             entry->symSection=symSection;
-            entry->symValue=symValue;
+            entry->symValue=symValue+sections[symSection].bytes.size();
         }
-        
-
     }
 
     size_t sectionsNum;
@@ -134,6 +121,12 @@ int Linker::readFromBinFile(std::string file)
             in.read(reinterpret_cast<char*>(&readStringSize), sizeof(size_t));
             symbol.resize(readStringSize);
             in.read(&symbol[0], readStringSize);
+
+            offset  += sections[sectionName].bytes.size();
+            if (sections.find(symbol) != sections.end())
+            {
+                addend += sections[symbol].bytes.size();
+            }
 
             sections[sectionName].relocationTable.emplace_back(offset, addend, symbol);
         }
@@ -209,4 +202,110 @@ int Linker::parseCallingArguments(int argc, char **argv)
     }
 
     return 0;
+}
+void Linker::relocationEntriesResolve()
+{
+    for(auto& [sectionName, section]: sections){
+        for(auto &relocationEntry : section.relocationTable)
+        {
+            unsigned long value=relocationEntry.addend;
+            if(sections.find(relocationEntry.symbol)!=sections.end())
+            {
+                value += parsedSectionsStarts[relocationEntry.symbol];
+            }
+            else
+            {
+                for (auto& symbolEntry : symbolTable)
+                {
+                    if(symbolEntry.symName==relocationEntry.symbol)
+                    {
+                        value += symbolEntry.symValue;
+                        value += parsedSectionsStarts[symbolEntry.symSection];
+                        break;
+                    }
+                }
+            }
+
+            for(int i=0; i<4; i++)
+            {
+                section.bytes[relocationEntry.offset+i]=(value>>(i*8))&0xFF;
+            }
+        }
+    }
+}
+
+int Linker::placeSections()
+{
+    unsigned long nextStart = 0;
+    for(auto& [sectionName, section]: sections)
+    {
+        if (parsedSectionsStarts.find(sectionName) != parsedSectionsStarts.end())
+        {
+            nextStart = std::max<unsigned long>(nextStart,parsedSectionsStarts[sectionName]);
+            for (auto &[secName, secStart] : parsedSectionsStarts)
+            {
+                // find overlapping sections
+                if (secName != sectionName && secStart < nextStart + section.bytes.size() && secStart + sections[secName].bytes.size() > nextStart)
+                {
+                    std::cout << "Sections " << sectionName << " and " << secName << " overlap" << std::endl;
+                    return 1;
+                }
+            }
+        }
+    }
+    for(auto& [sectionName, section]: sections)
+    {
+        if (parsedSectionsStarts.find(sectionName) == parsedSectionsStarts.end())
+        {
+            parsedSectionsStarts[sectionName] = nextStart;
+            nextStart += section.bytes.size();
+        }
+    }
+
+    return 0;
+}
+
+void Linker::makeExecutableFile()
+{
+    std::ofstream out(outputFileName);
+
+    for(auto& [sectionName, section]: sections)
+    {
+        unsigned int startAddress=parsedSectionsStarts[sectionName];
+        unsigned int i=0;
+        while(i<section.bytes.size()/8+8)
+        {
+            out<<std::hex<<std::setw(8)<<std::setfill('0')<<startAddress+i*8<<": ";
+            for(int j=0; j<8; j++)
+            {
+                if(i*8+j<section.bytes.size())
+                {
+                    out<<std::setw(2)<<std::setfill('0')<<(int)section.bytes[i*8+j]<<" ";
+                }
+                else
+                {
+                    out<<"00 ";
+                }
+            }
+            out<<std::endl;
+            i+=8;
+        }
+    }
+}
+int Linker::checkForUndefinedSymbols()const
+{
+    for(auto& symbolEntry: symbolTable)
+    {
+        if(!symbolEntry.isDefined || symbolEntry.symSection=="UND")
+        {
+            std::cout<<symbolEntry.symName<<" is not defined"<<std::endl;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+std::vector<std::string> Linker::getInputFileNames()
+{
+    return this->inputFileNames;
 }
