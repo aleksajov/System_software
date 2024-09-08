@@ -66,10 +66,14 @@ int Linker::readFromBinFile(std::string file)
 
         if(find(symbolTable.begin(), symbolTable.end(), symName)==symbolTable.end())
         {
-            if(symSection!="/")
+            if(symSection!="/" && symSection!="UND")
             {
                 unsigned int currSectionSize=sections[symSection].bytes.size();
                 symbolTable.emplace_back(symValue+currSectionSize, symSection, isGlobal, symName, isDefined);
+            }
+            else if(symSection=="UND")
+            {
+                symbolTable.emplace_back(0, "UND", isGlobal, symName, false);
             }
             else
             {
@@ -241,10 +245,9 @@ int Linker::placeSections()
     {
         if (parsedSectionsStarts.find(sectionName) != parsedSectionsStarts.end())
         {
-            nextStart = std::max<unsigned long>(nextStart,parsedSectionsStarts[sectionName]);
+            nextStart = std::max<unsigned long>(nextStart,parsedSectionsStarts[sectionName]+section.bytes.size());
             for (auto &[secName, secStart] : parsedSectionsStarts)
             {
-                // find overlapping sections
                 if (secName != sectionName && secStart < nextStart + section.bytes.size() && secStart + sections[secName].bytes.size() > nextStart)
                 {
                     std::cout << "Sections " << sectionName << " and " << secName << " overlap" << std::endl;
@@ -269,23 +272,37 @@ void Linker::makeExecutableFile()
 {
     std::ofstream out(outputFileName);
 
-    for(auto& [sectionName, section]: sections)
+    
+    std::vector<std::pair<std::string, unsigned int>> sectionsByAddresses;
+    for (const auto& [sectionName, section] : sections)
     {
-        unsigned int startAddress=parsedSectionsStarts[sectionName];
+        sectionsByAddresses.emplace_back(sectionName, parsedSectionsStarts[sectionName]);
+    }
+
+    std::sort(sectionsByAddresses.begin(), sectionsByAddresses.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+    
+
+    for(const auto& [sectionName, startAddress]: sectionsByAddresses)
+    {
+        Linker::section& section=sections[sectionName];
         unsigned int i=0;
-        while(i<section.bytes.size()/8+8)
+        while(i<section.bytes.size())
         {
-            out<<std::hex<<std::setw(8)<<std::setfill('0')<<startAddress+i*8<<": ";
+            out<<std::hex<<std::setw(8)<<std::setfill('0')<<startAddress+i<<":\t";
             for(int j=0; j<8; j++)
             {
-                if(i*8+j<section.bytes.size())
+                if(i+j<section.bytes.size())
                 {
-                    out<<std::setw(2)<<std::setfill('0')<<(int)section.bytes[i*8+j]<<" ";
+                    out<<std::setw(2)<<std::setfill('0')<<(int)section.bytes[i+j]<<" ";
                 }
-                else
+                
+                if(j==3)
                 {
-                    out<<"00 ";
+                    out<<"\t";
                 }
+                
             }
             out<<std::endl;
             i+=8;

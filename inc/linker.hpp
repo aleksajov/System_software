@@ -58,6 +58,8 @@ class Linker{
         std::vector<std::string> inputFileNames;
         std::string outputFileName;
         std::map<std::string, unsigned long> parsedSectionsStarts;
+
+        friend int main(int argc, char** argv);
 };
 
 #endif

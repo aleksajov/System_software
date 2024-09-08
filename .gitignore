@@ -4,8 +4,10 @@ misc/*.h
 misc/*.c
 asembler
 linker
+emulator
 .vscode/
 01-ss-2023-2024-projekat-odbrana-testovi/
 output.txt
 *.o
 *.txt
+*.hex
