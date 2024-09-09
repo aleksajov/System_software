@@ -62,53 +62,42 @@ void Emulator::executeProgram()
         {
             case 0x0:
                 this->halt();
-
-                std::cout<<"Halt"<<std::endl;
                 break;
 
             case 0x1:
                 this->interrupt();
-                std::cout<<"Interrupt"<<std::endl;
                 break;
 
             case 0x2:
                 this->call(instr);
-                std::cout<<"Call"<<std::endl;
                 break;
 
             case 0x3:
                 this->branches(instr);
-                std::cout<<"Branches"<<std::endl;
                 break;
 
             case 0x4:
                 this->xchg((instr>>16)&0xf, (instr>>12)&0xf);
-                std::cout<<"Xchg"<<std::endl;
                 break;
 
             case 0x5:
                 this->aritmeticalOperations(instr);
-                std::cout<<"Aritmetical"<<std::endl;
                 break;
 
             case 0x6:
                 this->logicalOperations(instr);
-                std::cout<<"Logical"<<std::endl;
                 break;
 
             case 0x7:
                 this->shiftOperations(instr);
-                std::cout<<"Shift"<<std::endl;
                 break;
 
             case 0x8:
                 this->storeOperations(instr);
-                std::cout<<"Store"<<std::endl;
                 break;
 
             case 0x9:
                 this->loadOperations(instr);
-                std::cout<<"Load"<<std::endl;
                 break;
                 
             default:
@@ -126,8 +115,8 @@ void Emulator::interrupt()
     this->push(this->csr[STATUS]);
     this->push(this->pc);
     this->csr[CAUSE]=4;
-    this->csr[STATUS]<=this->csr[STATUS]&(~0x1); 
-    this->pc<=this->csr[HANDLER];
+    this->csr[STATUS]=(this->csr[STATUS])&(~0x1); 
+    this->pc=this->csr[HANDLER];
 }
 
 void Emulator::call(uint32_t instr)
@@ -333,6 +322,7 @@ void Emulator::storeOperations(uint32_t instr)
         case 1:
             registers[gpra]=registers[gpra]+(int32_t)dddd;
             this->set32Memory(registers[gpra], registers[gprc]);
+            break;
 
         default:
             throw std::runtime_error("Unknown mod");
@@ -440,6 +430,7 @@ uint32_t Emulator::getInstruction()
         instr<<=8;
         instr|=this->memory[this->pc++];
     }
+    std::cout<<std::hex<<instr<<std::dec<<std::endl;
     return instr;    
 }
 
@@ -453,6 +444,7 @@ void Emulator::printProcessorState()
     std::cout<<"Emulated processor executed halt instruction"<<std::endl;
     std::cout<<"Emulated processor state:"<<std::endl;
     for(size_t i=0; i<16; i++){
-        std::cout<<"r"<<std::dec<<std::setw(2)<<std::setfill('0')<<i<<": 0x"<<std::hex<<std::setw(8)<<std::setfill('0')<<this->registers[i]<<std::endl;
+        std::cout<<"r"<<i<<"=0x"<<std::hex<<std::setw(8)<<std::setfill('0')<<this->registers[i]<<"\t";
+        if(i%4==3) std::cout<<std::endl;
     }
 }

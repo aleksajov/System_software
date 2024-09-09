@@ -2,7 +2,7 @@ tests/
 misc/*.o
 misc/*.h
 misc/*.c
-asembler
+assembler
 linker
 emulator
 .vscode/
