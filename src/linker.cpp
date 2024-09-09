@@ -297,6 +297,9 @@ void Linker::makeExecutableFile()
                 {
                     out<<std::setw(2)<<std::setfill('0')<<(int)section.bytes[i+j]<<" ";
                 }
+                else{
+                    out<<"00 ";
+                }
                 
                 if(j==3)
                 {
