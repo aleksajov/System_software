@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -g -Iinc
+CXXFLAGS = -Wall -g -Iinc -std=c++17
 
 SRC_DIR = src
 MISC_DIR = misc
@@ -11,8 +11,6 @@ LINKER_SRCS = $(SRC_DIR)/linker.cpp
 C_SRCS = $(wildcard $(MISC_DIR)/*.c)
 
 ASSEMBLER_OBJS = $(ASSEMBLER_SRCS:.cpp=.o) $(C_SRCS:.c=.o) $(MISC_DIR)/flex.o $(MISC_DIR)/parser.o
-EMULATOR_OBJS = $(EMULATOR_SRCS:.cpp=.o)
-LINKER_OBJS = $(LINKER_SRCS:.cpp=.o)
 
 ASSEMBLER_TARGET = assembler
 EMULATOR_TARGET = emulator
@@ -24,13 +22,11 @@ $(ASSEMBLER_TARGET): $(ASSEMBLER_OBJS)
 	$(CXX)	$(CXXFLAGS) -o $@ $^
 	rm -f $(ASSEMBLER_OBJS)
 
-$(EMULATOR_TARGET): $(EMULATOR_OBJS)
+$(EMULATOR_TARGET): $(EMULATOR_SRCS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-	rm -f $(EMULATOR_OBJS)
 
-$(LINKER_TARGET): $(LINKER_OBJS)
+$(LINKER_TARGET): $(LINKER_SRCS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-	rm -f $(LINKER_OBJS)
 
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -53,6 +49,4 @@ $(MISC_DIR)/bison.c $(MISC_DIR)/bison.h: $(MISC_DIR)/bisonFile.y
 clean:
 	rm -f misc/*.o src/*.o misc/flex.c misc/bison.c misc/bison.h $(ASSEMBLER_TARGET) $(EMULATOR_TARGET) $(LINKER_TARGET)
 
-
-# Phony targets
 .PHONY: all clean

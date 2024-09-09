@@ -126,17 +126,18 @@ void Emulator::call(uint32_t instr)
     gpra=(instr>>20)&0xf;
     gprb=(instr>>16)&0xf;
     dddd=instr&0xfff;
+    int32_t signedDisplacement=((int32_t)(dddd<<20))>>20;
 
     this->push(this->pc);
     
     if(mod==0)
     {
-        this->pc=(int32_t)registers[gpra]+(int32_t)registers[gprb]+(int32_t)dddd;
+        this->pc=(int32_t)registers[gpra]+(int32_t)registers[gprb]+signedDisplacement;
     }
     else if(mod==1)
     {
         
-        uint32_t address=registers[gpra]+registers[gprb]+(int32_t)dddd;
+        uint32_t address=registers[gpra]+registers[gprb]+signedDisplacement;
         this->pc=this->get32Memory(address);
     }
     else throw std::runtime_error("Unknown mod");
@@ -151,52 +152,53 @@ void Emulator::branches(uint32_t instr)
     gprc=(instr>>12)&0xf;
     dddd=instr&0xfff;
     uint32_t address;
+    int32_t signedDisplacement=((int32_t)(dddd<<20))>>20;
 
     switch(mod){
         case 0:
-            this->pc=registers[gpra]+(int32_t)dddd;
+            this->pc=registers[gpra]+signedDisplacement;
             break;
 
         case 1:
             if(registers[gprb]==registers[gprc]){
-                this->pc=registers[gpra]+(int32_t)dddd;
+                this->pc=registers[gpra]+signedDisplacement;
             }
             break;
 
         case 2:
             if(registers[gprb]!=registers[gprc]){
-                this->pc=registers[gpra]+(int32_t)dddd;
+                this->pc=registers[gpra]+signedDisplacement;
             }
             break;
 
         case 3:
             if((int32_t)registers[gprb]>(int32_t)registers[gprc]){
-                this->pc=registers[gpra]+(int32_t)dddd;
+                this->pc=registers[gpra]+signedDisplacement;
             }
             break;
 
         case 0b1000:
-            address=registers[gpra]+(int32_t)dddd;
+            address=registers[gpra]+signedDisplacement;
             this->pc=this->get32Memory(address);
             break;
 
         case 0b1001:
             if(registers[gprb]==registers[gprc]){
-                address=registers[gpra]+(int32_t)dddd;
+                address=registers[gpra]+signedDisplacement;
                 this->pc=this->get32Memory(address);
             }
             break;
 
         case 0b1010:
             if(registers[gprb]!=registers[gprc]){
-                address=registers[gpra]+(int32_t)dddd;
+                address=registers[gpra]+signedDisplacement;
                 this->pc=this->get32Memory(address);
             }
             break;
 
         case 0b1011:
             if((int32_t)registers[gprb]>(int32_t)registers[gprc]){
-                address=registers[gpra]+(int32_t)dddd;
+                address=registers[gpra]+signedDisplacement;
                 this->pc=this->get32Memory(address);
             }
             break;
@@ -306,21 +308,23 @@ void Emulator::storeOperations(uint32_t instr)
     uint16_t dddd=instr&0xfff;
     uint32_t address;
     uint32_t val;
+    int32_t signedDisplacement=((int32_t)(dddd<<20))>>20;
+
     switch(mod){
         case 0:
             val=registers[gprc];
-            address=registers[gpra]+registers[gprb]+(int32_t)dddd;
+            address=registers[gpra]+registers[gprb]+signedDisplacement;
             this->set32Memory(address, val);
             break;
 
         case 2:
-            address=registers[gpra]+registers[gprb]+(int32_t)dddd;
+            address=registers[gpra]+registers[gprb]+signedDisplacement;
             address=this->get32Memory(address);
             this->set32Memory(address, registers[gprc]);
             break;
 
         case 1:
-            registers[gpra]=registers[gpra]+(int32_t)dddd;
+            this->setRegisterVal(gpra, registers[gpra]+signedDisplacement);
             this->set32Memory(registers[gpra], registers[gprc]);
             break;
 
@@ -338,6 +342,8 @@ void Emulator::loadOperations(uint32_t instr)
     gprc=(instr>>12)&0xf;
     uint16_t dddd=instr&0xfff;
     uint32_t address;
+    int32_t signedDisplacement=((int32_t)(dddd<<20))>>20;
+    
     switch (mod)
     {
         case 0:
@@ -345,17 +351,17 @@ void Emulator::loadOperations(uint32_t instr)
             break;
 
         case 1:
-            this->setRegisterVal(gpra, registers[gprb]+(int32_t)dddd);
+            this->setRegisterVal(gpra, registers[gprb]+signedDisplacement);
             break;
 
         case 2:
-            address=registers[gprb]+registers[gprc]+(int32_t)dddd;
+            address=registers[gprb]+registers[gprc]+signedDisplacement;
             this->setRegisterVal(gpra, this->get32Memory(address));
             break;
 
         case 3:
             this->setRegisterVal(gpra, this->get32Memory(registers[gprb]));
-            this->setRegisterVal(gprb, registers[gprb]+(int32_t)dddd);
+            this->setRegisterVal(gprb, registers[gprb]+signedDisplacement);
             break;
 
         case 4:
@@ -367,13 +373,13 @@ void Emulator::loadOperations(uint32_t instr)
             break;
 
         case 6:
-            address=registers[gprb]+registers[gprc]+(int32_t)dddd;
+            address=registers[gprb]+registers[gprc]+signedDisplacement;
             csr[gpra]=this->get32Memory(address);
             break;
 
         case 7:
             csr[gpra]=this->get32Memory(registers[gprb]);
-            this->setRegisterVal(gprb, registers[gprb]+(int32_t)dddd);
+            this->setRegisterVal(gprb, registers[gprb]+signedDisplacement);
             break;
 
         default:
@@ -430,7 +436,6 @@ uint32_t Emulator::getInstruction()
         instr<<=8;
         instr|=this->memory[this->pc++];
     }
-    std::cout<<std::hex<<instr<<std::dec<<std::endl;
     return instr;    
 }
 
