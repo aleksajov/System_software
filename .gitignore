@@ -2,6 +2,9 @@ tests/
 misc/*.o
 misc/*.h
 misc/*.c
+misc/*.cpp
+misc/*.hpp
+
 assembler
 linker
 emulator
