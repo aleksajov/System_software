@@ -43,6 +43,9 @@ class Instruction{
         static void store_symbol(uint8_t reg, std::string symbol);
         static void store_regind(uint8_t gprs, uint8_t gpraddress);
         static void store_regind_offs(uint16_t offset, uint8_t gprs, uint8_t gpraddress);
+
+        static void ld_regPlusReg(uint8_t reg1, uint8_t reg2, uint8_t regd);
+        static void st_regPlusReg(uint8_t regs, uint8_t reg1, uint8_t reg2);
         
     private:
         static void branches(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol, uint8_t mmmm);

@@ -1,5 +1,6 @@
 #include "../inc/instruction.hpp"
 #include "../inc/directive.hpp"
+#include "instruction.hpp"
 
 void Instruction::halt()
 {
@@ -212,6 +213,14 @@ void Instruction::store_regind_offs(uint16_t offset, uint8_t gprs, uint8_t gprad
         exit(1);
     }
     Assembler::getInstance().generateCode(0x8, 0, gpraddress, 0, gprs, offset);
+}
+void Instruction::ld_regPlusReg(uint8_t reg1, uint8_t reg2, uint8_t regd)
+{
+    Assembler::getInstance().generateCode(0x9, 0x2, regd, reg1, reg2, 0);
+}
+void Instruction::st_regPlusReg(uint8_t regs, uint8_t reg1, uint8_t reg2)
+{
+    Assembler::getInstance().generateCode(0x8, 0, reg1, reg2, regs, 0);
 }
 void Instruction::branches(uint8_t gpr1, uint8_t gpr2, std::string literal_or_symbol, uint8_t mmmm)
 {

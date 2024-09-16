@@ -153,6 +153,7 @@ instruction:
     | LD REGISTER COMMA REGISTER {  Instruction::load_regdir($2, $4);}
     | LD LEFT_BRACKET REGISTER RIGHT_BRACKET COMMA REGISTER {  Instruction::load_reg_ind($3, $6);}
     | LD LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET COMMA REGISTER {  Instruction::load_reg_ind_offset($5, $3, $8);}
+    | LD LEFT_BRACKET REGISTER PLUS REGISTER RIGHT_BRACKET COMMA REGISTER {  Instruction::ld_regPlusReg($3, $5, $8);}
     | ST REGISTER COMMA DOLARINTEGER {printf("Parsing err: Tried st to literal "); exit(1); }
     | ST REGISTER COMMA DOLARIDENT {printf("Parsing err: Tried immediate adressing with st"); free($4); exit(1); }
     | ST REGISTER COMMA INTEGER { Instruction::store_literal($2, $4);}
@@ -160,6 +161,7 @@ instruction:
     | ST REGISTER COMMA REGISTER { Instruction::load_regdir($2, $4);}
     | ST REGISTER COMMA LEFT_BRACKET REGISTER RIGHT_BRACKET {Instruction::store_regind($2, $5);}
     | ST REGISTER COMMA LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET {Instruction::store_regind_offs($7, $2, $5); }
+    | ST REGISTER COMMA LEFT_BRACKET REGISTER PLUS REGISTER RIGHT_BRACKET {Instruction::st_regPlusReg($2, $5, $7); }
     ;
 
 
