@@ -2,14 +2,14 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstring>
+#include <string.h>
 extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 extern char* yytext;
 
 #include "../inc/instruction.hpp"
-#include "../inc/directive.hpp"
+#include "../inc/directive.hpp" 
 
 void yyerror(const char *s);
 %}
@@ -19,7 +19,6 @@ void yyerror(const char *s);
   char *stringValue;
 }
 
-%token DOLAR
 %token COMMA
 %token LEFT_BRACKET;
 %token RIGHT_BRACKET;
@@ -61,8 +60,6 @@ void yyerror(const char *s);
 %token <integerValue> INTEGER
 %token <integerValue> DOLARINTEGER
 %token <integerValue> REGISTER
-%token <integerValue> SP
-%token <integerValue> PC
 %token STATUS
 %token HANDLER
 %token CAUSE
@@ -85,15 +82,15 @@ statements:
 statement:
     directive
     | instruction
-    | LABEL  { printf("Parsed LABEL: %s\n", $1); Assembler::getInstance().handleLabel($1); free($1);}
+    | LABEL  { Assembler::getInstance().handleLabel($1); free($1);}
     ;
 directive:
-    GLOBAL list_of_symbols { printf("Parsed global: %s\n", $2);  Directive::global($2); free($2); }
-    | EXTERN list_of_symbols { printf("Parsed extern: %s\n", $2);  Directive::_extern($2); free($2);}
-    | SECTION IDENT { printf("Parsed section: %s\n", $2); Directive::section($2); free($2); }
-    | WORD list_of_literals_or_symbols { printf("Parsed word: %s\n", $2); Directive::word($2); }
-    | SKIP INTEGER { printf("Parsed skip: \n"); Directive::skip($2); }
-    | END { printf("Parsed end: \n"); Directive::end(); YYACCEPT;}
+    GLOBAL list_of_symbols { Directive::global($2); free($2); }
+    | EXTERN list_of_symbols { Directive::_extern($2); free($2);}
+    | SECTION IDENT { Directive::section($2); free($2); }
+    | WORD list_of_literals_or_symbols { Directive::word($2); }
+    | SKIP INTEGER { Directive::skip($2); }
+    | END { Directive::end(); YYACCEPT;}
     ;
 list_of_symbols:
     IDENT { $$=strdup($1); free($1);}
@@ -125,44 +122,44 @@ literal_or_symbol:
     ;
 
 instruction:
-    HALT { printf("Parsed halt \n"); Instruction::halt();}
-    | INT { printf("Parsed int: \n"); Instruction::interrupt();}
-    | IRET { printf("Parsed iret: \n"); Instruction::iret();}
-    | CALL literal_or_symbol { unsigned int num=strtoul($2, NULL, 16); printf("Parsed call %d  0x%x\n", num, num); Instruction::call($2); free($2);}
-    | RET { printf("Parsed ret: \n"); Instruction::ret(); }
-    | JMP literal_or_symbol { printf("Parsed jmp: %s\n", $2); Instruction::jmp($2); free($2);}
-    | BEQ REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed beq with registers %d %d and %s: \n", $2, $4, $6); Instruction::beq($2, $4, $6); free($6);}
-    | BNE REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bne: with registers %d %d and %s: \n", $2, $4, $6); Instruction::bne($2, $4, $6); free($6);}
-    | BGT REGISTER COMMA REGISTER COMMA literal_or_symbol { printf("Parsed bgt: with registers %d %d and %s: \n", $2, $4, $6); Instruction::bgt($2, $4, $6); free($6);}
-    | PUSH REGISTER{ printf("Parsed push: %d\n", $2); Instruction::push($2); }
-    | POP REGISTER{printf("Parsed pop:  %d\n", $2); Instruction::pop($2); }
-    | XCHG REGISTER COMMA REGISTER { printf("Parsed xchg: with registers %d %d: \n", $2, $4); Instruction::xchg($2, $4);}
-    | ADD REGISTER COMMA REGISTER { printf("Parsed add: with registers %d %d: \n", $2, $4); Instruction::add($4, $2); }
-    | SUB REGISTER COMMA REGISTER { printf("Parsed sub: with registers %d %d: \n", $2, $4); Instruction::sub($4, $2);}
-    | MUL REGISTER COMMA REGISTER { printf("Parsed mul: with registers %d %d: \n", $2, $4); Instruction::mul($4, $2);}
-    | DIV REGISTER COMMA REGISTER { printf("Parsed div: with registers %d %d: \n", $2, $4); Instruction::div($4, $2);}
-    | NOT REGISTER{ printf("Parsed not: %d\n", $2); Instruction::_not($2); }
-    | AND REGISTER COMMA REGISTER { printf("Parsed and: with registers %d %d: \n", $2, $4); Instruction::_and($4, $2);}
-    | OR REGISTER COMMA REGISTER {printf("Parsed or:with registers %d %d: \n", $2, $4); Instruction::_or($4, $2);}
-    | XOR REGISTER COMMA REGISTER {printf("Parsed xor:with registers %d %d: \n", $2, $4); Instruction::_xor($4, $2);}
-    | SHL REGISTER COMMA REGISTER {printf("Parsed shl: with registers %d %d: \n", $2, $4); Instruction::shl($4, $2);}
-    | SHR REGISTER COMMA REGISTER {printf("Parsed shr: with registers %d %d: \n", $2, $4); Instruction::shr($4, $2);}
-    | CSRRD csr COMMA REGISTER { printf("Parsed csrrd:  %d , %d\n",  $2, $4); Instruction::csrrd($2, $4); }
-    | CSRWR REGISTER COMMA csr {printf("Parsed csrwr: reg %d , %d\n",  $2, $4); Instruction::csrrw($2, $4); }
-    | LD DOLARINTEGER COMMA REGISTER { printf("Parsed  dolarinteger ld: with int %d register %d : \n", $2, $4); Instruction::load_imm_literal($2, $4);}
-    | LD DOLARIDENT COMMA REGISTER { printf("Parsed ld: with dolarymb %s and register %d : \n", $2, $4); Instruction::load_imm_symbol($2, $4);}
-    | LD INTEGER COMMA REGISTER { printf("Parsed ld: with register %d and address %d: \n",  $4, $2); Instruction::load_literal($2, $4);}
-    | LD IDENT COMMA REGISTER { printf("Parsed ld: with register %d and ident %s: \n",  $4, $2); Instruction::load_symbol($2, $4); }
-    | LD REGISTER COMMA REGISTER { printf("Parsed ld r%d, r%d \n", $2, $4); Instruction::load_regdir($2, $4);}
-    | LD LEFT_BRACKET REGISTER RIGHT_BRACKET COMMA REGISTER { printf("Parsed ld [r%d], r%d  \n",  $3, $6); Instruction::load_reg_ind($3, $6);}
-    | LD LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET COMMA REGISTER { printf("Parsed ld [r%d+%x], r%d : \n",  $3, $5, $8); Instruction::load_reg_ind_offset($5, $3, $8);}
+    HALT { Instruction::halt();}
+    | INT { Instruction::interrupt();}
+    | IRET { Instruction::iret();}
+    | CALL literal_or_symbol { Instruction::call($2); free($2);}
+    | RET {  Instruction::ret(); }
+    | JMP literal_or_symbol { Instruction::jmp($2); free($2);}
+    | BEQ REGISTER COMMA REGISTER COMMA literal_or_symbol { Instruction::beq($2, $4, $6); free($6);}
+    | BNE REGISTER COMMA REGISTER COMMA literal_or_symbol { Instruction::bne($2, $4, $6); free($6);}
+    | BGT REGISTER COMMA REGISTER COMMA literal_or_symbol { Instruction::bgt($2, $4, $6); free($6);}
+    | PUSH REGISTER{ Instruction::push($2); }
+    | POP REGISTER{ Instruction::pop($2); }
+    | XCHG REGISTER COMMA REGISTER { Instruction::xchg($2, $4);}
+    | ADD REGISTER COMMA REGISTER {  Instruction::add($4, $2); }
+    | SUB REGISTER COMMA REGISTER {  Instruction::sub($4, $2);}
+    | MUL REGISTER COMMA REGISTER {  Instruction::mul($4, $2);}
+    | DIV REGISTER COMMA REGISTER { Instruction::div($4, $2);}
+    | NOT REGISTER{  Instruction::_not($2); }
+    | AND REGISTER COMMA REGISTER {  Instruction::_and($4, $2);}
+    | OR REGISTER COMMA REGISTER { Instruction::_or($4, $2);}
+    | XOR REGISTER COMMA REGISTER { Instruction::_xor($4, $2);}
+    | SHL REGISTER COMMA REGISTER { Instruction::shl($4, $2);}
+    | SHR REGISTER COMMA REGISTER { Instruction::shr($4, $2);}
+    | CSRRD csr COMMA REGISTER {  Instruction::csrrd($2, $4); }
+    | CSRWR REGISTER COMMA csr {Instruction::csrrw($2, $4); }
+    | LD DOLARINTEGER COMMA REGISTER { Instruction::load_imm_literal($2, $4);}
+    | LD DOLARIDENT COMMA REGISTER { Instruction::load_imm_symbol($2, $4); free($2);}
+    | LD INTEGER COMMA REGISTER {  Instruction::load_literal($2, $4);}
+    | LD IDENT COMMA REGISTER { Instruction::load_symbol($2, $4); free($2);}
+    | LD REGISTER COMMA REGISTER {  Instruction::load_regdir($2, $4);}
+    | LD LEFT_BRACKET REGISTER RIGHT_BRACKET COMMA REGISTER {  Instruction::load_reg_ind($3, $6);}
+    | LD LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET COMMA REGISTER {  Instruction::load_reg_ind_offset($5, $3, $8);}
     | ST REGISTER COMMA DOLARINTEGER {printf("Parsing err: Tried st to literal "); exit(1); }
-    | ST REGISTER COMMA DOLARIDENT {printf("Parsing err: Tried immediate adressing with st"); exit(1); }
-    | ST REGISTER COMMA INTEGER {printf("Parsed st: with register %d and literal %x: \n", $2, $4); Instruction::store_literal($2, $4);}
-    | ST REGISTER COMMA IDENT {printf("Parsed st: with register %d and ident %s: \n", $2, $4); Instruction::store_symbol($2, $4);}
-    | ST REGISTER COMMA REGISTER {printf("Parsed st r%d, r%d \n", $2, $4); Instruction::load_regdir($2, $4);}
-    | ST REGISTER COMMA LEFT_BRACKET REGISTER RIGHT_BRACKET {printf("Parsed st r%d, [r%d] : \n", $2, $5); Instruction::store_regind($2, $5);}
-    | ST REGISTER COMMA LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET {printf("Parsed st r%d, [r%d + %d] : \n", $2, $5, $7); Instruction::store_regind_offs($7, $2, $5); }
+    | ST REGISTER COMMA DOLARIDENT {printf("Parsing err: Tried immediate adressing with st"); free($4); exit(1); }
+    | ST REGISTER COMMA INTEGER { Instruction::store_literal($2, $4);}
+    | ST REGISTER COMMA IDENT { Instruction::store_symbol($2, $4); free($4);}
+    | ST REGISTER COMMA REGISTER { Instruction::load_regdir($2, $4);}
+    | ST REGISTER COMMA LEFT_BRACKET REGISTER RIGHT_BRACKET {Instruction::store_regind($2, $5);}
+    | ST REGISTER COMMA LEFT_BRACKET REGISTER PLUS INTEGER RIGHT_BRACKET {Instruction::store_regind_offs($7, $2, $5); }
     ;
 
 

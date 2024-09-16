@@ -245,15 +245,16 @@ int Linker::placeSections()
     {
         if (parsedSectionsStarts.find(sectionName) != parsedSectionsStarts.end())
         {
-            nextStart = std::max<unsigned long>(nextStart,parsedSectionsStarts[sectionName]+section.bytes.size());
+            nextStart = std::max<unsigned long>(nextStart,parsedSectionsStarts[sectionName]);
             for (auto &[secName, secStart] : parsedSectionsStarts)
             {
-                if (secName != sectionName && secStart < nextStart + section.bytes.size() && secStart + sections[secName].bytes.size() > nextStart)
+                if (secName != sectionName && secStart + sections[secName].bytes.size()> nextStart)
                 {
                     std::cout << "Sections " << sectionName << " and " << secName << " overlap" << std::endl;
                     return 1;
                 }
             }
+            nextStart+=section.bytes.size();
         }
     }
     for(auto& [sectionName, section]: sections)

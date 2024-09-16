@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void Assembler::generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, short int disp)
+void Assembler::generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, uint16_t disp)
 {
     checkSectionOpened();
     

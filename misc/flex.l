@@ -2,7 +2,7 @@
     #include <stdio.h>
     #include <stdlib.h>
  
-    #include "bison.h"
+    #include "bison.hpp"
 
 
     int lineNum=1;

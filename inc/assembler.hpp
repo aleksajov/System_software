@@ -43,7 +43,7 @@ class Assembler {
             }
         };
 
-        void generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, short int disp);
+        void generateCode(uint8_t oc, uint8_t mod, uint8_t rega, uint8_t regb, uint8_t regc, uint16_t disp);
 
         void handleLabel(std::string label);
         void relocationEntriesResolve();
